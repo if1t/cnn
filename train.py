@@ -35,24 +35,24 @@ model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)))
 model.add(layers.MaxPooling2D((2, 2)))
 model.add(layers.Conv2D(64, (3, 3), activation='relu'))
 model.add(layers.MaxPooling2D((2, 2)))
-model.add(layers.Conv2D(128, (3, 3), activation='relu'))
+model.add(layers.Conv2D(64, (3, 3), activation='relu'))
 
 # Добавление полносвязных слоев
 model.add(layers.Flatten())
-model.add(layers.Dense(128, activation='relu'))
-model.add(layers.Dropout(0.4))
+model.add(layers.Dense(64, activation='relu'))
+model.add(layers.Dropout(0.5))
 model.add(layers.Dense(10, activation='softmax'))
 
 # Настройка оптимизатора и выбор функции потерь
 model.compile(optimizer='adam', loss='mean_squared_error', metrics=['accuracy'])
 
 # Подготовка данных для обучения с использованием генератора расширения данных
-datagen = ImageDataGenerator(rotation_range=10, width_shift_range=0.1, height_shift_range=0.1, zoom_range=0.1)
+datagen = ImageDataGenerator(rotation_range=10, width_shift_range=0.1, height_shift_range=0.1, zoom_range=0.2)
 datagen.fit(train_images)
 
 # Обучение модели
 batch_size = 64
-epochs = 4
+epochs = 15
 steps_per_epoch = len(train_images) / batch_size
 
 history = model.fit(
