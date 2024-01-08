@@ -1,23 +1,17 @@
-import numpy as np
-from tensorflow.keras import layers, models
-from tensorflow.keras.models import load_model
-from tensorflow.keras.datasets import mnist
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from keras import layers, models
+from keras.datasets import mnist
+from keras.preprocessing.image import ImageDataGenerator
 from keras.utils import to_categorical
 import matplotlib.pyplot as plt
 
-# Загрузка набора данных MNIST (Изображения рукописных цифр от 0 до 9).
+# Загрузка набора данных MNIST (Изображения рукописных цифр).
 (train_images, train_labels), (val_images, val_labels) = mnist.load_data()
 
 # Приводим значения пикселей до диапазона от 0 до 1 и изменяем форму данных так,
 # чтобы они соответствовали входу сверточной нейронной сети 28x28 пикселей с каналом 1.
-train_images = train_images.reshape((60000, 28, 28, 1))
-train_images = train_images.astype('float32') / 255
+train_images = train_images.reshape((60000, 28, 28, 1)).astype('float32') / 255
+val_images = val_images.reshape((10000, 28, 28, 1)).astype('float32') / 255
 
-val_images = val_images.reshape((10000, 28, 28, 1))
-val_images = val_images.astype('float32') / 255
-
-# Кодирование меток в векторы
 train_labels = to_categorical(train_labels)
 val_labels = to_categorical(val_labels)
 
@@ -32,37 +26,35 @@ model.add(layers.Conv2D(64, (3, 3), activation='relu'))
 # Добавление полносвязных слоев
 model.add(layers.Flatten())
 model.add(layers.Dense(64, activation='relu'))
+model.add(layers.Dropout(0.5))
 model.add(layers.Dense(10, activation='softmax'))
 
-# Настройка оптимизатора и выбор функции потерь
-model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+# Настройка оптимизатора и функции потерь
+model.compile(optimizer='rmsprop',
+              loss='categorical_crossentropy',
+              metrics=['accuracy'])
 
 # Подготовка данных для обучения с использованием генератора расширения данных
-datagen = ImageDataGenerator(rotation_range=40, width_shift_range=0.2, height_shift_range=0.2, shear_range=0.2, zoom_range=0.2, horizontal_flip=True)
+datagen = ImageDataGenerator(rotation_range=10, width_shift_range=0.1, height_shift_range=0.1, zoom_range=0.1)
 datagen.fit(train_images)
 
 # Обучение модели
-batch_size = 32
-history = model.fit(datagen.flow(train_images, train_labels, batch_size), steps_per_epoch=len(train_images) / batch_size, epochs=10, validation_data=(val_images, val_labels))
+batch_size = 64 # кол-во образцов на обновление градиента
+epochs = 5 # кол-во итераций по всем предоставленным данным
+history = model.fit(datagen.flow(train_images, train_labels, batch_size=batch_size),
+                    steps_per_epoch=len(train_images) / batch_size, epochs=epochs,
+                    validation_data=(val_images, val_labels))
 
 # Сохранение обученной модели
 model.save('cnn_model.keras')
 
-# Загрузка сохраненной модели
-model = load_model('cnn_model.keras')
-
-# Оценка производительности на тестовых данных
-test_loss, test_accuracy = model.evaluate(val_images, val_labels)
-
-# Вывод результатов
-print('Точность на тестовой выборке:', test_accuracy)
-
-# Построение графиков изменения точности на обучающей и валидационной выборке
+# Построение графиков
 acc = history.history['accuracy']
 val_acc = history.history['val_accuracy']
 loss = history.history['loss']
 val_loss = history.history['val_loss']
 
+# изменения точности на обучающей и валидационной выборке
 plt.plot(acc, label='Обучающая')
 plt.plot(val_acc, label='Валидационная')
 plt.title('Точность на выборках')
@@ -72,7 +64,7 @@ plt.legend()
 
 plt.figure()
 
-# Построение графиков изменения потери на обучающей и валидационной выборке
+# изменения потери на обучающей и валидационной выборке
 plt.plot(loss, label='Обучающая')
 plt.plot(val_loss, label='Валидационная')
 plt.title('Потери на выборках')
