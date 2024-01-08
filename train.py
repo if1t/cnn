@@ -16,7 +16,7 @@ test_images = test_images.reshape((10000, 28, 28, 1)).astype('float32') / 255
 train_images, val_images, train_labels, val_labels = train_test_split(
     train_images,
     train_labels,
-    test_size=0.25,
+    test_size=0.1,
     random_state=42
 )
 
@@ -25,9 +25,9 @@ val_labels = to_categorical(val_labels)
 test_labels = to_categorical(test_labels)
 
 # Проверка размерности каждой выборки
-print("Размеры обучающей выборки:", train_images.shape, train_labels.shape)
-print("Размеры валидационной выборки:", val_images.shape, val_labels.shape)
-print("Размеры тестовой выборки:", test_images.shape, test_labels.shape)
+print('Размеры обучающей выборки:', train_images.shape, train_labels.shape)
+print('Размеры валидационной выборки:', val_images.shape, val_labels.shape)
+print('Размеры тестовой выборки:', test_images.shape, test_labels.shape, '\n')
 
 # Конструирование сверточной нейронной сети
 model = models.Sequential()
@@ -35,12 +35,12 @@ model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)))
 model.add(layers.MaxPooling2D((2, 2)))
 model.add(layers.Conv2D(64, (3, 3), activation='relu'))
 model.add(layers.MaxPooling2D((2, 2)))
-model.add(layers.Conv2D(64, (3, 3), activation='relu'))
+model.add(layers.Conv2D(128, (3, 3), activation='relu'))
 
 # Добавление полносвязных слоев
 model.add(layers.Flatten())
-model.add(layers.Dense(64, activation='relu'))
-model.add(layers.Dropout(0.6))
+model.add(layers.Dense(128, activation='relu'))
+model.add(layers.Dropout(0.4))
 model.add(layers.Dense(10, activation='softmax'))
 
 # Настройка оптимизатора и выбор функции потерь
@@ -52,7 +52,7 @@ datagen.fit(train_images)
 
 # Обучение модели
 batch_size = 64
-epochs = 8
+epochs = 4
 steps_per_epoch = len(train_images) / batch_size
 
 history = model.fit(
@@ -65,7 +65,7 @@ history = model.fit(
 model.save('cnn_model.keras')
 
 # Оценка производительности на тестовых данных
-print('Оценка точности и потери на тестовой выборке:')
+print('\n', 'Оценка  потери и точности на тестовой выборке:')
 model.evaluate(test_images, test_labels)
 
 # Построение графиков
