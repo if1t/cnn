@@ -1,19 +1,33 @@
-from keras import layers, models
 from keras.datasets import mnist
+from sklearn.model_selection import train_test_split
+from keras import layers, models
 from keras.preprocessing.image import ImageDataGenerator
 from keras.utils import to_categorical
 import matplotlib.pyplot as plt
 
-# Загрузка набора данных MNIST (Изображения рукописных цифр).
-(train_images, train_labels), (val_images, val_labels) = mnist.load_data()
+# Загрузка данных и деление на обучающую и тестовую выборки.
+(train_images, train_labels), (test_images, test_labels) = mnist.load_data()
 
-# Приводим значения пикселей до диапазона от 0 до 1 и изменяем форму данных так,
-# чтобы они соответствовали входу сверточной нейронной сети 28x28 пикселей с каналом 1.
+# Предварительная обработка данных.
 train_images = train_images.reshape((60000, 28, 28, 1)).astype('float32') / 255
-val_images = val_images.reshape((10000, 28, 28, 1)).astype('float32') / 255
+test_images = test_images.reshape((10000, 28, 28, 1)).astype('float32') / 255
+
+# Выделение из обучающей валидационной выборки.
+train_images, val_images, train_labels, val_labels = train_test_split(
+    train_images,
+    train_labels,
+    test_size=0.25,
+    random_state=42
+)
 
 train_labels = to_categorical(train_labels)
 val_labels = to_categorical(val_labels)
+test_labels = to_categorical(test_labels)
+
+# Проверка размерности каждой выборки
+print("Размеры обучающей выборки:", train_images.shape, train_labels.shape)
+print("Размеры валидационной выборки:", val_images.shape, val_labels.shape)
+print("Размеры тестовой выборки:", test_images.shape, test_labels.shape)
 
 # Конструирование сверточной нейронной сети
 model = models.Sequential()
@@ -26,7 +40,7 @@ model.add(layers.Conv2D(64, (3, 3), activation='relu'))
 # Добавление полносвязных слоев
 model.add(layers.Flatten())
 model.add(layers.Dense(64, activation='relu'))
-model.add(layers.Dropout(0.5))
+model.add(layers.Dropout(0.6))
 model.add(layers.Dense(10, activation='softmax'))
 
 # Настройка оптимизатора и выбор функции потерь
@@ -38,7 +52,7 @@ datagen.fit(train_images)
 
 # Обучение модели
 batch_size = 64
-epochs = 6
+epochs = 8
 steps_per_epoch = len(train_images) / batch_size
 
 history = model.fit(
@@ -49,6 +63,10 @@ history = model.fit(
 
 # Сохранение обученной модели
 model.save('cnn_model.keras')
+
+# Оценка производительности на тестовых данных
+print('Оценка точности и потери на тестовой выборке:')
+model.evaluate(test_images, test_labels)
 
 # Построение графиков
 acc = history.history['accuracy']
