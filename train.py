@@ -4,6 +4,7 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.datasets import mnist
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from keras.utils import to_categorical
+import matplotlib.pyplot as plt
 
 # Загрузка набора данных MNIST (Изображения рукописных цифр от 0 до 9).
 (train_images, train_labels), (val_images, val_labels) = mnist.load_data()
@@ -55,3 +56,28 @@ test_loss, test_accuracy = model.evaluate(val_images, val_labels)
 
 # Вывод результатов
 print('Точность на тестовой выборке:', test_accuracy)
+
+# Построение графиков изменения точности на обучающей и валидационной выборке
+acc = history.history['accuracy']
+val_acc = history.history['val_accuracy']
+loss = history.history['loss']
+val_loss = history.history['val_loss']
+
+plt.plot(acc, label='Обучающая')
+plt.plot(val_acc, label='Валидационная')
+plt.title('Точность на выборках')
+plt.xlabel('Эпохи')
+plt.ylabel('Точность')
+plt.legend()
+
+plt.figure()
+
+# Построение графиков изменения потери на обучающей и валидационной выборке
+plt.plot(loss, label='Обучающая')
+plt.plot(val_loss, label='Валидационная')
+plt.title('Потери на выборках')
+plt.xlabel('Эпохи')
+plt.ylabel('Потери')
+plt.legend()
+
+plt.show()
