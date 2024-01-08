@@ -29,21 +29,23 @@ model.add(layers.Dense(64, activation='relu'))
 model.add(layers.Dropout(0.5))
 model.add(layers.Dense(10, activation='softmax'))
 
-# Настройка оптимизатора и функции потерь
-model.compile(optimizer='rmsprop',
-              loss='categorical_crossentropy',
-              metrics=['accuracy'])
+# Настройка оптимизатора и выбор функции потерь
+model.compile(optimizer='adam', loss='mean_squared_error', metrics=['accuracy'])
 
 # Подготовка данных для обучения с использованием генератора расширения данных
 datagen = ImageDataGenerator(rotation_range=10, width_shift_range=0.1, height_shift_range=0.1, zoom_range=0.1)
 datagen.fit(train_images)
 
 # Обучение модели
-batch_size = 64 # кол-во образцов на обновление градиента
-epochs = 5 # кол-во итераций по всем предоставленным данным
-history = model.fit(datagen.flow(train_images, train_labels, batch_size=batch_size),
-                    steps_per_epoch=len(train_images) / batch_size, epochs=epochs,
-                    validation_data=(val_images, val_labels))
+batch_size = 64
+epochs = 6
+steps_per_epoch = len(train_images) / batch_size
+
+history = model.fit(
+    datagen.flow(train_images, train_labels, batch_size=batch_size),
+    steps_per_epoch=steps_per_epoch, epochs=epochs,
+    validation_data=(val_images, val_labels)
+)
 
 # Сохранение обученной модели
 model.save('cnn_model.keras')
@@ -54,7 +56,7 @@ val_acc = history.history['val_accuracy']
 loss = history.history['loss']
 val_loss = history.history['val_loss']
 
-# изменения точности на обучающей и валидационной выборке
+# график изменения точности на обучающей и валидационной выборке
 plt.plot(acc, label='Обучающая')
 plt.plot(val_acc, label='Валидационная')
 plt.title('Точность на выборках')
@@ -64,7 +66,7 @@ plt.legend()
 
 plt.figure()
 
-# изменения потери на обучающей и валидационной выборке
+# график изменения потери на обучающей и валидационной выборке
 plt.plot(loss, label='Обучающая')
 plt.plot(val_loss, label='Валидационная')
 plt.title('Потери на выборках')
