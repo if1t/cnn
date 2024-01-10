@@ -40,7 +40,7 @@ model.add(layers.Conv2D(64, (3, 3), activation='relu'))
 # Добавление полносвязных слоев
 model.add(layers.Flatten())
 model.add(layers.Dense(64, activation='relu'))
-model.add(layers.Dropout(0.5))
+model.add(layers.Dropout(0.6))
 model.add(layers.Dense(10, activation='softmax'))
 
 # Настройка оптимизатора и выбор функции потерь
@@ -52,7 +52,7 @@ datagen.fit(train_images)
 
 # Обучение модели
 batch_size = 64
-epochs = 15
+epochs = 7
 steps_per_epoch = len(train_images) / batch_size
 
 history = model.fit(
